@@ -17,7 +17,7 @@
     margin:0;
     background:var(--bg);
     color:var(--fg);
-    font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-family:"Futura","Futura PT","Century Gothic",-apple-system,BlinkMacSystemFont,sans-serif;
     overflow:hidden;
   }
   .stage{
@@ -73,9 +73,10 @@
   .corner{
     position:fixed;
     bottom:clamp(1.25rem,3vw,2rem);
+    right:clamp(1.25rem,4vw,3rem);
     z-index:5;
-    font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-    font-size:.72rem;
+    font-weight:600;
+    font-size:.85rem;
     letter-spacing:.1em;
     text-transform:uppercase;
   }
@@ -85,12 +86,9 @@
     transition:color .2s ease;
   }
   .corner a:hover{ color:var(--fg); }
-  .corner.left{ left:clamp(1.25rem,4vw,3rem); }
-  .corner.right{ right:clamp(1.25rem,4vw,3rem); }
 
   @media (max-width:640px){
     .corner{ position:static; margin-top:2.5rem; }
-    .corner.left{ margin-bottom:.5rem; }
   }
 </style>
 </head>
@@ -102,10 +100,7 @@
   <p class="motto">We make noise with purpose.</p>
 </div>
 
-<nav class="corner left">
-  <a href="mailto:stefanoritteri@sounddealer.io">stefanoritteri@sounddealer.io</a>
-</nav>
-<nav class="corner right">
+<nav class="corner">
   <a href="https://stefanoritteri.com">Selected work</a>
 </nav>
 
