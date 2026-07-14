@@ -4,13 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sound Dealer</title>
-<meta name="description" content="Sound Dealer — music and sound production, London. The company behind Stefano Ritteri's work.">
+<meta name="description" content="Sound Dealer — music, sound, and the systems that make them. Stefano Ritteri's studio.">
 <style>
   :root{
-    --bg:#0c0b09;
+    --bg:#070605;
     --fg:#f4efe4;
     --dim:#8d867a;
     --rule:#2a2722;
+    --red:#ff5a36;
+    --cyan:#33d6c0;
   }
   *{box-sizing:border-box;}
   html,body{height:100%;}
@@ -23,6 +25,7 @@
     flex-direction:column;
     min-height:100vh;
     padding:6vw 6vw 4vw;
+    overflow-x:hidden;
   }
   main{
     flex:1;
@@ -36,9 +39,33 @@
     font-size:clamp(3rem, 12vw, 9rem);
     font-weight:800;
     letter-spacing:-0.03em;
-    line-height:0.92;
+    line-height:1.05;
     text-transform:uppercase;
+    display:flex;
+    flex-wrap:wrap;
+    user-select:none;
+    padding-top:0.15em; /* headroom for the letters stretching up */
   }
+  .ch{
+    position:relative;
+    display:inline-block;
+    transform-origin:50% 100%;
+    will-change:transform;
+  }
+  .sp{ display:inline-block; width:0.26em; flex-shrink:0; }
+  .ch .base{
+    position:relative;
+    z-index:1;
+    color:var(--fg);
+  }
+  .ch .ghost{
+    position:absolute;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+  }
+  .ch .ghost.r{ color:var(--red); transform:translateX(calc(var(--split, 0) * 1px)); opacity:.7; }
+  .ch .ghost.c{ color:var(--cyan); transform:translateX(calc(var(--split, 0) * -1px)); opacity:.7; }
   .rule{
     height:1px;
     background:var(--rule);
@@ -52,6 +79,12 @@
     line-height:1.5;
     color:var(--fg);
     font-weight:400;
+  }
+  p.lede .small{
+    display:block;
+    margin-top:0.5em;
+    color:var(--dim);
+    font-size:0.82em;
   }
   .links{
     display:flex;
@@ -103,9 +136,11 @@
 </head>
 <body>
 <main>
-  <h1>Sound Dealer</h1>
+  <h1 id="wordmark" aria-label="Sound Dealer"></h1>
   <div class="rule"></div>
-  <p class="lede">Music and sound production, based in London. The company behind Stefano Ritteri's work.</p>
+  <p class="lede">Music, sound, and the systems that make them.
+    <span class="small">Stefano Ritteri's studio — composer, and the tools he builds along the way.</span>
+  </p>
   <div class="links">
     <div><span class="label">Selected work</span><a href="https://stefanoritteri.com">stefanoritteri.com</a></div>
     <div><span class="label">Contact</span><a href="mailto:stefano@sounddealer.io">stefano@sounddealer.io</a></div>
@@ -114,6 +149,81 @@
 <footer>
   <span>Sound Dealer &mdash; <span id="y"></span></span>
 </footer>
-<script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+<script>
+(function(){
+  var word = "SOUND DEALER";
+  var wordmark = document.getElementById('wordmark');
+  var letters = [];
+  for (var i = 0; i < word.length; i++){
+    var ch = word[i];
+    if (ch === ' '){
+      var sp = document.createElement('span');
+      sp.className = 'sp';
+      sp.setAttribute('aria-hidden', 'true');
+      wordmark.appendChild(sp);
+      continue;
+    }
+    var wrap = document.createElement('span');
+    wrap.className = 'ch';
+    wrap.setAttribute('aria-hidden', 'true');
+    wrap.innerHTML =
+      '<i class="ghost r">' + ch + '</i>' +
+      '<i class="ghost c">' + ch + '</i>' +
+      '<b class="base">' + ch + '</b>';
+    wordmark.appendChild(wrap);
+    letters.push(wrap);
+  }
+
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) return;
+
+  var SPEED = 0.9;      // wave travel speed
+  var SPACING = 0.5;     // phase offset between letters
+  var AMPL = 15;         // px vertical travel
+  var STRETCH = 0.24;    // rubbery squash/stretch amount
+  var SPLIT = 4;         // px chromatic split at peak
+  var SIGMA = 140;       // px, pointer influence radius
+  var POINTER_AMPL = 12; // px, extra pointer ripple
+
+  var centers = [];
+  function measure(){
+    centers = letters.map(function(el){
+      var r = el.getBoundingClientRect();
+      return r.left + r.width / 2;
+    });
+  }
+  measure();
+  window.addEventListener('resize', measure);
+
+  var pointerX = null;
+  window.addEventListener('pointermove', function(e){ pointerX = e.clientX; });
+  window.addEventListener('pointerleave', function(){ pointerX = null; });
+
+  function frame(t){
+    var time = t / 1000;
+    for (var i = 0; i < letters.length; i++){
+      var phase = time * SPEED - i * SPACING;
+      var wave = Math.sin(phase);
+
+      var extra = 0;
+      if (pointerX !== null && centers[i] !== undefined){
+        var dist = pointerX - centers[i];
+        var influence = Math.exp(-(dist * dist) / (2 * SIGMA * SIGMA));
+        extra = influence * Math.sin(time * SPEED * 3) * POINTER_AMPL;
+      }
+
+      var ty = wave * AMPL - extra;
+      var sy = 1 + wave * STRETCH;
+      var sx = 1 - wave * STRETCH * 0.5;
+      var el = letters[i];
+      el.style.transform = 'translateY(' + ty.toFixed(2) + 'px) scale(' + sx.toFixed(3) + ',' + sy.toFixed(3) + ')';
+      el.style.setProperty('--split', (wave * SPLIT).toFixed(2));
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+document.getElementById('y').textContent = new Date().getFullYear();
+</script>
 </body>
 </html>
