@@ -4,79 +4,157 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sound Dealer</title>
-<meta name="description" content="Sound Dealer.">
+<meta name="description" content="Sound Dealer — we make noise with purpose.">
 <style>
   :root{
     --bg:#0a0a0a;
-    --line:#ece1c6;
+    --fg:#ece1c6;
+    --dim:#8f8672;
+    --gold:#de9717;
   }
   *{box-sizing:border-box;}
   html,body{height:100%;}
   body{
     margin:0;
     background:var(--bg);
+    color:var(--fg);
+    font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;
     overflow:hidden;
   }
   .stage{
     min-height:100vh;
     display:flex;
+    flex-direction:column;
     align-items:center;
     justify-content:center;
+    padding:6vw 5vw;
+    text-align:center;
   }
-  svg{ display:block; overflow:visible; }
-  #word{
-    font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;
+
+  h1#wordmark{
+    margin:0;
+    width:100%;
+    display:flex;
+    flex-wrap:nowrap;
+    white-space:nowrap;
+    justify-content:center;
     font-weight:800;
+    letter-spacing:-0.03em;
+    text-transform:uppercase;
+    line-height:1;
+    color:var(--fg);
+    opacity:0;
+    transition:opacity .8s ease;
+  }
+  .ch{
+    position:relative;
+    display:inline-block;
+    transform-origin:50% 100%;
+    will-change:transform;
+  }
+  .ch .base{
+    position:relative;
+    z-index:1;
+    text-shadow:
+      0.01em 0.01em 0 rgba(0,0,0,.35),
+      0.02em 0.02em 0 rgba(0,0,0,.28),
+      0.03em 0.03em 0 rgba(0,0,0,.20),
+      0.04em 0.04em 0 rgba(0,0,0,.12);
+  }
+  .ch .glow{
+    position:absolute; inset:-30% -15%;
+    background:radial-gradient(closest-side, var(--gold), transparent 70%);
+    filter:blur(0.06em);
+    opacity:0;
+    z-index:0;
+    mix-blend-mode:screen;
+    pointer-events:none;
+  }
+  .sp{ display:inline-block; width:.22em; flex-shrink:0; }
+
+  .motto{
+    margin:clamp(1.5rem,4vw,2.5rem) 0 0;
+    font-weight:700;
     letter-spacing:-0.01em;
-    fill:none;
-    stroke:var(--line);
-    stroke-linejoin:round;
-    stroke-linecap:round;
+    font-size:clamp(1.3rem,3vw,2.2rem);
+    color:var(--fg);
+  }
+
+  .corner{
+    position:fixed;
+    bottom:clamp(1.25rem,3vw,2rem);
+    z-index:5;
+    font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    font-size:.72rem;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+  }
+  .corner a{
+    color:var(--dim);
+    text-decoration:none;
+    transition:color .2s ease;
+  }
+  .corner a:hover{ color:var(--fg); }
+  .corner.left{ left:clamp(1.25rem,4vw,3rem); }
+  .corner.right{ right:clamp(1.25rem,4vw,3rem); }
+
+  @media (max-width:640px){
+    .corner{ position:static; margin-top:2.5rem; }
+    .corner.left{ margin-bottom:.5rem; }
   }
 </style>
 </head>
 <body>
 <div class="stage">
-  <svg id="svg" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <filter id="boil" x="-30%" y="-30%" width="160%" height="160%">
-        <feTurbulence id="turb" type="fractalNoise" baseFrequency="0.012 0.05" numOctaves="2" seed="1" result="noise"></feTurbulence>
-        <feDisplacementMap in="SourceGraphic" in2="noise" scale="7" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap>
-      </filter>
-    </defs>
-    <text id="word" x="50%" y="50%" text-anchor="middle" dominant-baseline="central" filter="url(#boil)">sounddealer.io</text>
-  </svg>
+  <header id="hero" style="width:100%;">
+    <h1 id="wordmark" aria-label="Sound Dealer"></h1>
+  </header>
+  <p class="motto">We make noise with purpose.</p>
 </div>
+
+<nav class="corner left">
+  <a href="mailto:stefanoritteri@sounddealer.io">stefanoritteri@sounddealer.io</a>
+</nav>
+<nav class="corner right">
+  <a href="https://stefanoritteri.com">Selected work</a>
+</nav>
 
 <script>
 (function(){
-  var svg = document.getElementById('svg');
-  var text = document.getElementById('word');
-  var turb = document.getElementById('turb');
-  var stage = document.querySelector('.stage');
+  var word = "SOUND DEALER";
+  var wordmark = document.getElementById('wordmark');
+  var hero = document.getElementById('hero');
+  var letters = [];
+
+  for (var i = 0; i < word.length; i++){
+    var ch = word[i];
+    if (ch === ' '){
+      var sp = document.createElement('span');
+      sp.className = 'sp';
+      sp.setAttribute('aria-hidden', 'true');
+      wordmark.appendChild(sp);
+      continue;
+    }
+    var wrap = document.createElement('span');
+    wrap.className = 'ch';
+    wrap.setAttribute('aria-hidden', 'true');
+    wrap.innerHTML = '<i class="glow"></i><b class="base">' + ch + '</b>';
+    wordmark.appendChild(wrap);
+    letters.push(wrap);
+  }
 
   function fit(){
-    var w = stage.clientWidth;
-    var h = window.innerHeight;
-    var padding = w * 0.1;
-    var available = w - padding;
-
-    svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
-    svg.setAttribute('width', w);
-    svg.setAttribute('height', h);
-    text.setAttribute('x', w / 2);
-    text.setAttribute('y', h / 2);
-
-    text.style.fontSize = (h * 0.32) + 'px';
-    var bbox = text.getBBox();
-    if (bbox.width > 0){
-      var scale = available / bbox.width;
-      var newSize = parseFloat(text.style.fontSize) * scale;
-      text.style.fontSize = newSize + 'px';
-      text.style.strokeWidth = Math.max(2, newSize * 0.014) + 'px';
+    var available = hero.clientWidth;
+    wordmark.style.fontSize = '10vw';
+    var startPx = parseFloat(getComputedStyle(wordmark).fontSize);
+    var rect = wordmark.getBoundingClientRect();
+    if (rect.width > 0){
+      var scale = available / rect.width;
+      wordmark.style.fontSize = (startPx * scale) + 'px';
     }
   }
   fit();
+  requestAnimationFrame(function(){ wordmark.style.opacity = 1; });
 
   var resizeTimer;
   window.addEventListener('resize', function(){
@@ -85,13 +163,25 @@
   });
 
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   if (!reduceMotion){
-    var seeds = [1, 6, 3, 8, 2, 9, 4, 7, 1];
-    var i = 0;
-    setInterval(function(){
-      i = (i + 1) % seeds.length;
-      turb.setAttribute('seed', seeds[i]);
-    }, 160);
+    var SPEED = 0.7, SPACING = 0.45, AMPL = 10, STRETCH = 0.16;
+
+    function frame(t){
+      var time = t / 1000;
+      for (var i = 0; i < letters.length; i++){
+        var phase = time * SPEED - i * SPACING;
+        var wave = Math.sin(phase);
+        var ty = wave * AMPL;
+        var sy = 1 + wave * STRETCH;
+        var sx = 1 - wave * STRETCH * 0.4;
+        var el = letters[i];
+        el.style.transform = 'translateY(' + ty.toFixed(2) + 'px) scale(' + sx.toFixed(3) + ',' + sy.toFixed(3) + ')';
+        el.querySelector('.glow').style.opacity = (Math.abs(wave) * 0.35).toFixed(2);
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
   }
 })();
 </script>
