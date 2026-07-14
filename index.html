@@ -10,7 +10,6 @@
     --bg:#0a0a0a;
     --fg:#ece1c6;
     --dim:#8f8672;
-    --gold:#de9717;
   }
   *{box-sizing:border-box;}
   html,body{height:100%;}
@@ -60,15 +59,6 @@
       0.02em 0.02em 0 rgba(0,0,0,.28),
       0.03em 0.03em 0 rgba(0,0,0,.20),
       0.04em 0.04em 0 rgba(0,0,0,.12);
-  }
-  .ch .glow{
-    position:absolute; inset:-30% -15%;
-    background:radial-gradient(closest-side, var(--gold), transparent 70%);
-    filter:blur(0.06em);
-    opacity:0;
-    z-index:0;
-    mix-blend-mode:screen;
-    pointer-events:none;
   }
   .sp{ display:inline-block; width:.22em; flex-shrink:0; }
 
@@ -138,7 +128,7 @@
     var wrap = document.createElement('span');
     wrap.className = 'ch';
     wrap.setAttribute('aria-hidden', 'true');
-    wrap.innerHTML = '<i class="glow"></i><b class="base">' + ch + '</b>';
+    wrap.innerHTML = '<b class="base">' + ch + '</b>';
     wordmark.appendChild(wrap);
     letters.push(wrap);
   }
@@ -177,7 +167,6 @@
         var sx = 1 - wave * STRETCH * 0.4;
         var el = letters[i];
         el.style.transform = 'translateY(' + ty.toFixed(2) + 'px) scale(' + sx.toFixed(3) + ',' + sy.toFixed(3) + ')';
-        el.querySelector('.glow').style.opacity = (Math.abs(wave) * 0.35).toFixed(2);
       }
       requestAnimationFrame(frame);
     }
